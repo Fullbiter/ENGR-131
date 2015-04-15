@@ -74,29 +74,41 @@ dictionary = textscan(fid,'%s');
 fclose(fid);
 
 % Pick a random word from the dictionary
-secretWord = dictionary{1}{randi(length(dictionary{1}))};
+secretWord = dictionary{1}{randi(length(dictionary{1}))}
 % Create a text element to show correctly guessed letters
 shownWord = uicontrol('style','text','position',[10 80 380 40],'string','_ _ _ _ _',...
                       'fontsize',26);
-              
-%pic_1 = imread('man_1.png');
-%pic_2 = imread('man_2.png');
-%pic_3 = imread('man_3.png');
-%pic_4 = imread('man_4.png');
-%pic_5 = imread('man_5.png');
 
+% Load the bad guess images
+%man_0 = imread('man_0.png');
+%man_1 = imread('man_0.png');
+%man_2 = imread('man_0.png');
+%man_3 = imread('man_0.png');
+%man_4 = imread('man_0.png');
+%man_5 = imread('man_0.png');
+
+% Status image
+%axis equal;
+%imshow('man_0.png');
+
+% Counters for each type of guess
 badGuessCount = 0;
 goodGuessCount = 0;
     
     function chooseLetter(source,eventdata)
         % Store the shown word
-        word = get(shownWord, 'string');
+        text = get(shownWord,'string');
         % Store the guessed letter
         letter = get(source,'string');
         % Find and store the indexes that match the letter
-        matchedIndexes = strfind(word, letter);
+        matchedIndexes = strfind(secretWord, letter)
         if length(matchedIndexes) == 0
-            badGuessCount = badGuessCount + 1;
+            badGuessCount = badGuessCount + 1
+        else
+            matchedIndexes = matchedIndexes * 2 - 1;
+            text(matchedIndexes) = letter
+            set(shownWord,'string',text);
+            goodGuessCount = goodGuessCount + 1
         end
         % Disable the letter button
         set(source,'enable','off');
