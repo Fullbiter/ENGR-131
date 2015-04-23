@@ -1,5 +1,5 @@
 % Authors: Kevin Nash
-% Date: 4/16/2015
+% Date: 4/17/2015
 
 % The game's main function
 function [] = Hangman()
@@ -19,8 +19,8 @@ movegui(window, 'center');
 btn_play = uicontrol('style','pushbutton','position',[145 80 110 40],'string','Play',...
                      'fontsize',18,'callback',@play);
 % Create stats button
-btn_stats = uicontrol('style','pushbutton','position',[145 45 110 30],'string','Statistics',...
-                     'fontsize',12,'callback',@stats);
+btn_scores = uicontrol('style','pushbutton','position',[145 45 110 30],'string','High Scores',...
+                     'fontsize',12,'callback',@score);
 
 % Create all letter buttons
 btns_letter = zeros(1,26);
@@ -82,6 +82,11 @@ fid = fopen('dictionary.txt');
 dictionary = textscan(fid,'%s');
 fclose(fid);
 
+% Open the stats file and save the scores
+fid = fopen('stats.txt');
+scores = textscan(fid,'%s');
+fclose(fid);
+
 % Create a text element to display the title
 txt_title = uicontrol('visible','on','style','text','position',[10 180 380 70],...
                       'string','Hangman','fontsize',42);
@@ -96,6 +101,15 @@ txt_shown = uicontrol('visible','off','style','text','position',[10 80 380 40],'
 % Create the game over text
 txt_end = uicontrol('visible','off','style','text','position',[10 240 380 60],...
                     'string','null','fontsize',42);
+                
+% Create the high scores text
+txt_score1 = uicontrol('visible','off','style','text','position',[10 175 380 40],'string',...
+                       [scores{1}{1},'    ',scores{1}{2}],'fontsize',26);
+txt_score2 = uicontrol('visible','off','style','text','position',[10 135 380 40],'string',...
+                       [scores{1}{3},'    ',scores{1}{4}],'fontsize',26);
+txt_score3 = uicontrol('visible','off','style','text','position',[10 95 380 40],'string',...
+                       [scores{1}{5},'    ',scores{1}{6}],'fontsize',26);
+
 
 % Counter for incorrect guesses
 badGuessCount = 0;
@@ -106,13 +120,24 @@ lettersRemaining = usedLetterCount;
 % Callback function for the play button
 function play(source,eventdata)
     set(btn_play,'enable','off','visible','off');
-    set(btn_stats,'enable','off','visible','off');
+    set(btn_scores,'enable','off','visible','off');
     set(txt_title,'visible','off');
     set(txt_devs,'visible','off');
     set(txt_shown,'visible','on');
     for i = 1:length(btns_letter)
         set(btns_letter(i),'visible','on');
     end
+end
+
+% Callback function for the statistics button
+function score(source,eventdata)
+    set(btn_play,'enable','off','visible','off');
+    set(btn_scores,'enable','off','visible','off');
+    set(txt_title,'visible','off');
+    set(txt_devs,'visible','off');
+    set(txt_score1,'visible','on');
+    set(txt_score2,'visible','on');
+    set(txt_score3,'visible','on');
 end
 
 % Callback function for the letter buttons
