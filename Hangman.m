@@ -6,7 +6,7 @@ function [] = Hangman()
 
 % Create the window
 width = 400; height = 300;
-window = figure('visible','on',...
+window = figure('visible','off',...
                 'units','pixels',...
                 'position',[0 0 width height],...
                 'menubar','none',...
@@ -14,6 +14,7 @@ window = figure('visible','on',...
                 'name','HANGMAN',...
                 'resize','off');
 movegui(window, 'center');
+set(window,'visible','on');
 
 % Create play button
 btn_play = uicontrol('style','pushbutton','position',[145 80 110 40],'string','Play',...
@@ -90,6 +91,10 @@ fclose(fid);
 fid = fopen('highscores.txt');
 scores = textscan(fid,'%s');
 fclose(fid);
+
+% Create a text element to display the title
+txt_TEST = uicontrol('visible','on','style','text','position',[0 280 20 20],...
+                      'string','0','fontsize',12);
 
 % Create a text element to display the title
 txt_title = uicontrol('visible','on','style','text','position',[10 180 380 70],...
@@ -195,7 +200,7 @@ function chooseLetter(source,eventdata)
     % Disable the letter button
     set(source,'enable','off');
 end
-    
+
 % Function that ends the game with a win or loss
 function endGame(result)
     % Disable all letter buttons
@@ -211,20 +216,46 @@ function endGame(result)
     % Game is lost
     if result == 0
         set(txt_end,'string','GAME OVER');
+        set(txt_TEST,'string','0');
+        % Open the highscores file and save the scores
+        % First place
+        if winstreak > str2num(scores{1}{2})
+            fid = fopen('highscores.txt','w');
+            scores{1}{1} = 'YOU';
+            scores{1}{2} = num2str(winstreak);
+            for i = 1:(length(scores{1}) / 2)
+                fprintf(fid,'%s %s\n',scores{1}{i * 2 - 1},scores{1}{2 * i});
+            end
+            fclose(fid);
+            set(txt_score1,'string',[scores{1}{1} '   ' scores{1}{2}]);
+        % Second place
+        elseif winstreak > str2num(scores{1}{4})
+            fid = fopen('highscores.txt','w');
+            scores{1}{3} = 'YOU';
+            scores{1}{4} = num2str(winstreak);
+            for i = 1:(length(scores{1}) / 2)
+                fprintf(fid,'%s %s\n',scores{1}{i * 2 - 1},scores{1}{2 * i});
+            end
+            fclose(fid);
+            set(txt_score2,'string',[scores{1}{3} '   ' scores{1}{4}]);
+        % Third place
+        elseif winstreak > str2num(scores{1}{6})
+            fid = fopen('highscores.txt','w');
+            scores{1}{5} = 'YOU';
+            scores{1}{6} = num2str(winstreak);
+            for i = 1:(length(scores{1}) / 2)
+                fprintf(fid,'%s %s\n',scores{1}{i * 2 - 1},scores{1}{2 * i});
+            end
+            fclose(fid);
+            set(txt_score3,'string',[scores{1}{5} '   ' scores{1}{6}]);
+        end
         winstreak = 0;
     end
     % Game is won
     if result == 1
         set(txt_end,'string','WINNER');
         winstreak = winstreak + 1;
-        % Open the highscores file and save the scores
-        fid = fopen('highscores.txt','w');
-        if winstreak > scores{1}{6}
-            scores{1}{5} = 'YOU';
-            scores{1}{6} = num2str(winstreak);
-            fprintf(fid,'%s %s',scores);
-            fclose(fid);
-        end
+        set(txt_TEST,'string',num2str(winstreak));
     end
     % Show the end game message
     set(txt_end,'visible','on');
