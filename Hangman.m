@@ -1,5 +1,5 @@
 % Authors: Kevin Nash
-% Date: 4/17/2015
+% Date: 4/23/2015
 
 % The game's main function
 function [] = Hangman()
@@ -21,6 +21,10 @@ btn_play = uicontrol('style','pushbutton','position',[145 80 110 40],'string','P
 % Create stats button
 btn_scores = uicontrol('style','pushbutton','position',[145 45 110 30],'string','High Scores',...
                      'fontsize',12,'callback',@score);
+                 
+% Create back button
+btn_back = uicontrol('visible','off','style','pushbutton','position',[145 25 110 30],...
+                     'string','Back','fontsize',12,'callback',@back);
 
 % Create all letter buttons
 btns_letter = zeros(1,26);
@@ -82,8 +86,8 @@ fid = fopen('dictionary.txt');
 dictionary = textscan(fid,'%s');
 fclose(fid);
 
-% Open the stats file and save the scores
-fid = fopen('stats.txt');
+% Open the highscores file and save the scores
+fid = fopen('highscores.txt');
 scores = textscan(fid,'%s');
 fclose(fid);
 
@@ -93,10 +97,10 @@ txt_title = uicontrol('visible','on','style','text','position',[10 180 380 70],.
 % Create a text element to display the author names
 txt_devs = uicontrol('visible','on','style','text','position',[10 150 380 30],...
                       'string','Created by Kevin Nash','fontsize',10);
-% Pick a random word from the dictionary
-txt_secret = dictionary{1}{randi(length(dictionary{1}))};
+% To be a random word from the dictionary
+txt_secret = '';
 % Create a text element to show correctly guessed letters
-txt_shown = uicontrol('visible','off','style','text','position',[10 80 380 40],'string','_ _ _ _ _',...
+txt_shown = uicontrol('visible','off','style','text','position',[113 80 165 40],'string','_ _ _ _ _',...
                       'fontsize',26);
 % Create the game over text
 txt_end = uicontrol('visible','off','style','text','position',[10 240 380 60],...
@@ -110,20 +114,26 @@ txt_score2 = uicontrol('visible','off','style','text','position',[10 135 380 40]
 txt_score3 = uicontrol('visible','off','style','text','position',[10 95 380 40],'string',...
                        [scores{1}{5},'    ',scores{1}{6}],'fontsize',26);
 
-
 % Counter for incorrect guesses
 badGuessCount = 0;
-% Counter for the number of remaining letters
-usedLetterCount = length(unique(txt_secret));
-lettersRemaining = usedLetterCount;
+% To be a counter for the number of remaining letters
+usedLetterCount = 0;
+lettersRemaining = 0;
+% Counter for wins in a row
+winstreak = 0;
 
 % Callback function for the play button
 function play(source,eventdata)
+    badGuessCount = 0;
+    % Pick a random word from the dictionary NOTE: no semicolon to cheat
+    txt_secret = dictionary{1}{randi(length(dictionary{1}))}
+    usedLetterCount = length(unique(txt_secret));
+    lettersRemaining = usedLetterCount;
     set(btn_play,'enable','off','visible','off');
     set(btn_scores,'enable','off','visible','off');
     set(txt_title,'visible','off');
     set(txt_devs,'visible','off');
-    set(txt_shown,'visible','on');
+    set(txt_shown,'string','_ _ _ _ _','visible','on');
     for i = 1:length(btns_letter)
         set(btns_letter(i),'visible','on');
     end
@@ -138,6 +148,24 @@ function score(source,eventdata)
     set(txt_score1,'visible','on');
     set(txt_score2,'visible','on');
     set(txt_score3,'visible','on');
+    set(btn_back,'enable','on','visible','on');
+end
+
+% Callback function for the back button
+function back(source,eventdata)
+    %set(txt_score1,'visible','off');
+    %set(txt_score2,'visible','off');
+    %set(txt_score3,'visible','off');
+    set(txt_shown,'visible','off');
+    set(txt_end,'visible','off');
+    for i = 1:length(btns_letter)
+        set(btns_letter(i),'visible','off','enable','on');
+    end
+    set(btn_back,'visible','off','position',[145 25 110 30]);
+    set(btn_play,'enable','on','visible','on');
+    set(btn_scores,'enable','on','visible','on');
+    set(txt_title,'visible','on');
+    set(txt_devs,'visible','on');
 end
 
 % Callback function for the letter buttons
@@ -183,12 +211,23 @@ function endGame(result)
     % Game is lost
     if result == 0
         set(txt_end,'string','GAME OVER');
+        winstreak = 0;
     end
     % Game is won
     if result == 1
         set(txt_end,'string','WINNER');
+        winstreak = winstreak + 1;
+        % Open the highscores file and save the scores
+        fid = fopen('highscores.txt','w');
+        if winstreak > scores{1}{6}
+            scores{1}{5} = 'YOU';
+            scores{1}{6} = num2str(winstreak);
+            fprintf(fid,'%s %s',scores);
+            fclose(fid);
+        end
     end
     % Show the end game message
     set(txt_end,'visible','on');
+    set(btn_back,'position',[10 80 90 30],'visible','on');
 end
 end
